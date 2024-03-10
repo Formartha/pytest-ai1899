@@ -1,5 +1,8 @@
 import pytest
 import requests
+import logging
+
+logger = logging.getLogger("ai1899")
 
 
 def pytest_addoption(parser):
@@ -57,7 +60,6 @@ def pytest_addoption(parser):
 
 
 def find_option(pytest_config, option_name, default=None):
-
     value = (
             getattr(pytest_config.option, option_name, None) or
             pytest_config.getini(option_name)
@@ -84,7 +86,7 @@ class AiConnector(object):
             if not collection:
                 body.pop("collection")
 
-            response = requests.post(url=f"{self.url}/query", json=body)
+            response = requests.post(url=f"{self.url}/ai/query", json=body)
             return response.json()["hits"]
 
         except Exception as e:
@@ -92,12 +94,20 @@ class AiConnector(object):
 
 
 def pytest_collection_modifyitems(config, items):
-    aicon = AiConnector(find_option(config, "ai1899_endpoint"))
 
-    resp = aicon.query(query=find_option(config, "ai1899_query"),
-                       collection=find_option(config, "ai1899_collection"),
-                       limit=int(find_option(config, "ai1899_limit")))
+    try:
+        logger.info("ai1899 about to query for tests to run")
+        aicon = AiConnector(find_option(config, "ai1899_endpoint"))
 
-    for item in items:
-        if item.name not in resp:
-            item.add_marker("skip")
+        resp = aicon.query(query=find_option(config, "ai1899_query"),
+                           collection=find_option(config, "ai1899_collection"),
+                           limit=int(find_option(config, "ai1899_limit")))
+
+        for item in items:
+            if item.name not in resp:
+                reason = f"Test skipped because ai1899 query not met"
+                skip_with_reason = pytest.mark.skip(reason=reason)
+                item.add_marker(skip_with_reason)
+
+    except Exception as e:
+        logger.warning(f"Issue raised while trying to use ai1899: {e}")
