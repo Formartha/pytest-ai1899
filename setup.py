@@ -2,9 +2,6 @@ from setuptools import setup
 
 VERSION_NUMBER = "1.0.0"
 
-with open("requirements.txt", "r") as req:
-    REQUIREMENTS = req.readlines()
-
 
 setup(name="pytest-ai1899",
       version=VERSION_NUMBER,
@@ -15,7 +12,7 @@ setup(name="pytest-ai1899",
       packages=["pytest_ai1899"],
       package_data={"pytest_ai1899": ["*"]},
       entry_points={"pytest11": ["dependency = pytest_ai1899.plugin"]},
-      install_requires=REQUIREMENTS,
+      install_requires=["requests"],
       license="MIT",
       keywords="pyest-ai1899",
       classifiers=[
