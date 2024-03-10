@@ -2,10 +2,15 @@ from setuptools import setup
 
 VERSION_NUMBER = "1.0.0"
 
+# Load the README file as the long description
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
 
 setup(name="pytest-ai1899",
       version=VERSION_NUMBER,
       description="pytest plugin for connecting to ai1899 smart system stack",
+      long_description=long_description,  # Add the long_description field here
+      long_description_content_type="text/markdown",  # Specify the content type
       include_package_data=True,
       author="Mor Dabastany",
       url="https://github.com/Formartha/pytest-ai1899",
