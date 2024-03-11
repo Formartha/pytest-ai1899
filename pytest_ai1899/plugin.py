@@ -2,7 +2,7 @@ import pytest
 import requests
 import logging
 
-logger = logging.getLogger("ai1899")
+logger = logging.getLogger(__name__)
 
 
 def pytest_addoption(parser):
@@ -96,18 +96,25 @@ class AiConnector(object):
 def pytest_collection_modifyitems(config, items):
 
     try:
-        logger.info("ai1899 about to query for tests to run")
+        logger.info(f'pytest-ai1899 about to query for tests to run:\n'
+                    f'endpoint: {find_option(config, "ai1899_endpoint")},\n'
+                    f'query: {find_option(config, "ai1899_query")},\n'
+                    f'collection: {find_option(config, "ai1899_collection")},\n'
+                    f'limit: {find_option(config, "ai1899_limit")}\n')
+
         aicon = AiConnector(find_option(config, "ai1899_endpoint"))
 
-        resp = aicon.query(query=find_option(config, "ai1899_query"),
-                           collection=find_option(config, "ai1899_collection"),
-                           limit=int(find_option(config, "ai1899_limit")))
+        if find_option(config, "ai1899_query"):
+            resp = aicon.query(query=find_option(config, "ai1899_query"),
+                               collection=find_option(config, "ai1899_collection"),
+                               limit=int(find_option(config, "ai1899_limit")))
 
-        for item in items:
-            if item.name not in resp:
-                reason = f"Test skipped because ai1899 query not met"
-                skip_with_reason = pytest.mark.skip(reason=reason)
-                item.add_marker(skip_with_reason)
-
+            for item in items:
+                if item.name not in resp:
+                    reason = f"Test skipped because ai1899 query not met"
+                    skip_with_reason = pytest.mark.skip(reason=reason)
+                    item.add_marker(skip_with_reason)
+        else:
+            logger.info("pytest-ai1899 found no query, will proceed execution without connection to ai1899 stack")
     except Exception as e:
         logger.warning(f"Issue raised while trying to use ai1899: {e}")
