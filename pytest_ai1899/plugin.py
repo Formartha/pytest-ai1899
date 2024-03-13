@@ -36,6 +36,12 @@ def pytest_addoption(parser):
 
     # registering options
     add_shared_option(
+        name='ai1899_activate',
+        help_str='Allows activation of ai1899 only in case needed',
+        action='store_true'
+    )
+
+    add_shared_option(
         name='ai1899_query',
         help_str='Phrase a term which will connect to AI1899 to fetch information from it',
     )
@@ -95,26 +101,27 @@ class AiConnector(object):
 
 def pytest_collection_modifyitems(config, items):
 
-    try:
-        logger.info(f'pytest-ai1899 about to query for tests to run:\n'
-                    f'endpoint: {find_option(config, "ai1899_endpoint")},\n'
-                    f'query: {find_option(config, "ai1899_query")},\n'
-                    f'collection: {find_option(config, "ai1899_collection")},\n'
-                    f'limit: {find_option(config, "ai1899_limit")}\n')
+    if find_option(config, "ai1899_activate"):
+        try:
+            logger.info(f'pytest-ai1899 about to query for tests to run:\n'
+                        f'endpoint: {find_option(config, "ai1899_endpoint")},\n'
+                        f'query: {find_option(config, "ai1899_query")},\n'
+                        f'collection: {find_option(config, "ai1899_collection")},\n'
+                        f'limit: {find_option(config, "ai1899_limit")}\n')
 
-        aicon = AiConnector(find_option(config, "ai1899_endpoint"))
+            aicon = AiConnector(find_option(config, "ai1899_endpoint"))
 
-        if find_option(config, "ai1899_query"):
-            resp = aicon.query(query=find_option(config, "ai1899_query"),
-                               collection=find_option(config, "ai1899_collection"),
-                               limit=int(find_option(config, "ai1899_limit")))
+            if find_option(config, "ai1899_query"):
+                resp = aicon.query(query=find_option(config, "ai1899_query"),
+                                   collection=find_option(config, "ai1899_collection"),
+                                   limit=int(find_option(config, "ai1899_limit")))
 
-            for item in items:
-                if item.name not in resp:
-                    reason = f"Test skipped because ai1899 query not met"
-                    skip_with_reason = pytest.mark.skip(reason=reason)
-                    item.add_marker(skip_with_reason)
-        else:
-            logger.info("pytest-ai1899 found no query, will proceed execution without connection to ai1899 stack")
-    except Exception as e:
-        logger.warning(f"Issue raised while trying to use ai1899: {e}")
+                for item in items:
+                    if item.name not in resp:
+                        reason = f"Test skipped because ai1899 query not met"
+                        skip_with_reason = pytest.mark.skip(reason=reason)
+                        item.add_marker(skip_with_reason)
+            else:
+                logger.info("pytest-ai1899 found no query, will proceed execution without connection to ai1899 stack")
+        except Exception as e:
+            logger.warning(f"Issue raised while trying to use ai1899: {e}")
