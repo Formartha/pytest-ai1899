@@ -1,11 +1,14 @@
 import pytest
 import requests
 import logging
+import os
+import json
 
 logger = logging.getLogger(__name__)
 
 
 def pytest_addoption(parser):
+
     group = parser.getgroup('ai1899')
 
     def add_shared_option(name, help_str, default=None, action='store'):
@@ -99,6 +102,22 @@ class AiConnector(object):
             return e
 
 
+def write_config(config, selected_tests):
+    """ writes config for debug """
+    file_path = os.path.join(config.rootdir.strpath, ".ai1899")
+    data = {
+        "endpoint": find_option(config, "ai1899_endpoint"),
+        "query": find_option(config, "ai1899_query"),
+        "limit": find_option(config, "ai1899_limit"),
+        "collection": find_option(config, "ai1899_collection"),
+        "selected_tests": selected_tests
+    }
+
+    with open(file_path, "w") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+        logger.debug(f"location which the file can be found at is {file_path}")
+
+
 def pytest_collection_modifyitems(config, items):
 
     if find_option(config, "ai1899_activate"):
@@ -121,7 +140,11 @@ def pytest_collection_modifyitems(config, items):
                         reason = f"Test skipped because ai1899 query not met"
                         skip_with_reason = pytest.mark.skip(reason=reason)
                         item.add_marker(skip_with_reason)
+
+                if getattr(logging, "DEBUG", None) == logger.root.level:
+                    write_config(config, [item.name for item in items])
+
             else:
-                logger.info("pytest-ai1899 found no query, will proceed execution without connection to ai1899 stack")
+                logger.info("pytest-ai1899 found no query, will proceed without query ai1899 stack")
         except Exception as e:
             logger.warning(f"Issue raised while trying to use ai1899: {e}")
