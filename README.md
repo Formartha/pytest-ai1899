@@ -17,7 +17,7 @@ pip install pytest-ai1899
 
 pytest.ini options examples:
 -----------------------------------------------------
-to start the plugin, please pass ```--ai1899_activate``` or use ```'ai1899_activate=true'``` in the pytest.ini file.
+to start the plugin, please pass ```--ai1899_activate``` or use ```ai1899_activate=true``` in the pytest.ini file.
 ```
 [pytest]
 ai1899_endpoint = http://127.0.0.1/ai
