@@ -2,7 +2,7 @@
 
 ------
 
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/license/mit)
+![License](https://img.shields.io/pypi/l/pytest-ai1899?color=blue&link=https%3A%2F%2Fgithub.com%2FFormartha%2Fpytest-ai1899%2Fblob%2Fmain%2FLICENSE)
 ![PyPI](https://img.shields.io/pypi/v/pytest-ai1899)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/pytest-ai1899)
 
